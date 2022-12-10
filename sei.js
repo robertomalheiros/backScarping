@@ -12,9 +12,9 @@ import axios from "axios";
 //const download = require("download");
 //const fs = require("fs");
 
-//URL DO DIÁRIO
+//URL DO SEI
 const url =
-  "https://in.gov.br/servicos/diario-oficial-da-uniao/destaques-do-diario-oficial-da-uniao?p_p_id=com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_INSTANCE_mhF1RLPnJWPh&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&_com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_INSTANCE_mhF1RLPnJWPh_delta=20&p_r_p_resetCur=false&_com_liferay_asset_publisher_web_portlet_AssetPublisherPortlet_INSTANCE_mhF1RLPnJWPh_cur=2";
+  "https://sei.trf1.jus.br/sip/login.php?sigla_orgao_sistema=TRF1&sigla_sistema=SEI&infra_url=L3NlaS8=";
 
 //Função de Scraping
 async function render({ page }) {
@@ -23,45 +23,57 @@ async function render({ page }) {
   // const page = await browser.newPage();
   await page.goto(url, { waitUntil: "networkidle2" });
   console.log("3-Abrindo Página");
-  const resultsSelector = ".lista-de-dou";
+
+  await page.type("#txtUsuario", "ba2000930");
+  await page.type("#pwdSenha", "B&r&sh!t1312");
+  await page.type("#selOrgao", "SJBA");
+  const selecionar = "#selOrgao";
+  await page.waitForSelector(selecionar);
+  await page.click(selecionar);
+  await page.type("#selOrgao", "SJBA");
+  // const acessar = "#Acessar";
+  // await page.waitForSelector(acessar);
+  await page.click("#Acessar");
+
+  console.log("Entrei no SEI");
 
   let dou_detalhes = await page.evaluate(() => {
     //Extrai os detalhes básicos de cada diario
-    let listaDOU = document.querySelector(".lista-de-dou");
-    console.log("ListaDOU");
-    let diarios = Array.from(listaDOU.children);
-    console.log("diarios");
+    let listaSEI = document.querySelector(".infraTh");
+    console.log("listaSEI");
+    let procsSEI = Array.from(listaSEI.children);
+    console.log("procsSEI");
 
     // Percorra cada diario e obtenha seus detalhes
-    let diario_info = diarios.map((diarios) => {
-      let titulo = diarios.querySelector(".title").innerHTML;
-      let orgao = diarios.querySelector(".tag").textContent;
-      let imagem = diarios.querySelector(".col-2 > a > img").src;
-      let pdf = diarios.querySelector(".col-2 > a").href;
-      let dataPublicacao = diarios.querySelector(".date").textContent;
+    let diario_info = procsSEI.map((procSEI) => {
+      let titulo = procSEI.querySelector(".infraCheckboxDiv ").Tille;
+      // let orgao = procsSEI.querySelector(".tag").textContent;
+      // let imagem = procsSEI.querySelector(".col-2 > a > img").src;
+      // let pdf = procsSEI.querySelector(".col-2 > a").href;
+      // let dataPublicacao = procsSEI.querySelector(".date").textContent;
       //dados.push({ titulo, orgao, imagem, pdf, dataPublicacao });
 
-      return { titulo, orgao, imagem, pdf, dataPublicacao };
+      return { titulo };
     });
     return diario_info;
   });
 
-  // //Criando um arquivo JSON com os dados buscados
-  // fs.writeFile("dados", JSON.stringify(dou_detalhes, null, 2), (err) => {
-  //   if (err) throw new Error("Erro ao criar arquivo.");
-  // });
+  //Criando um arquivo JSON com os dados buscados
+  fs.writeFile("SEIs", JSON.stringify(dou_detalhes, null, 2), (err) => {
+    if (err) throw new Error("Erro ao criar arquivo.");
+  });
 
   //FAZENDO POST NA COLLECTION DOCUMENTOS
-  async function conect() {
-    try {
-      for (const item of dou_detalhes) {
-        await axios.post("https://reader-gov-back.cyclic.app/documents", item);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  conect();
+  // async function conect() {
+  //   try {
+  //     for (const item of dou_detalhes) {
+  //       await axios.post("https://reader-gov-back.cyclic.app/documents", item);
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
+  // conect();
 
   console.log("4-Finalidando o Render");
   await browser.close();
@@ -90,6 +102,9 @@ async function main() {
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 10,
+      headless: false,
+      args: ["--disable-setuid-sandbox"],
+      ignoreHTTPSErrors: true,
     });
 
     //EXECUTANDO BUSCA
@@ -117,6 +132,6 @@ async function main() {
     console.error(`${pid} quebrado! ${error.stack}`);
   }
 }
-// main();
+main();
 
-export default main;
+//export default main;

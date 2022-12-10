@@ -46,7 +46,7 @@ async function render({ page }) {
     return diario_info;
   });
 
-  // //Criando um arquivo JSON com os dados buscados
+  //Criando um arquivo JSON com os dados buscados
   // fs.writeFile("dados", JSON.stringify(dou_detalhes, null, 2), (err) => {
   //   if (err) throw new Error("Erro ao criar arquivo.");
   // });
@@ -90,6 +90,9 @@ async function main() {
     const cluster = await Cluster.launch({
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 10,
+      headless: false,
+      args: ["--disable-setuid-sandbox"],
+      ignoreHTTPSErrors: true,
     });
 
     //EXECUTANDO BUSCA
