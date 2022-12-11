@@ -91,7 +91,7 @@ async function main() {
       concurrency: Cluster.CONCURRENCY_CONTEXT,
       maxConcurrency: 10,
       headless: false,
-      args: ["--disable-setuid-sandbox"],
+      args: ["--no-sandbox", "--disable-setuid--sandbox"],
       ignoreHTTPSErrors: true,
     });
 
